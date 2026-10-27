@@ -39,10 +39,13 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            napari/pyproject.toml
-            napari/resources/constraints/constraints_py3.12_docs.txt
+
+      - name: Restore the pip cache
+        id: pip-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-py3.12-${{ hashFiles('napari/pyproject.toml', 'napari/resources/constraints/constraints_py3.12_docs.txt') }}
 
       - uses: tlambert03/setup-qt-libs@19e4ef2d781d81f5f067182e228b54ec90d23b76 # v1.8
 
@@ -87,6 +90,14 @@ jobs:
           # problems with screenshots (https://github.com/napari/docs/issues/285)
           linux-setup: "echo 'skip setup'"
           linux-teardown: "echo 'skip teardown'"
+
+      - name: Save the pip cache
+        # the link checker fails on any broken link, so the save runs on failure too
+        if: ${{ always() && steps.pip-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pip
+          key: ${{ steps.pip-cache.outputs.cache-primary-key }}
 
       - name: Write a fallback report
         # a build that fails before the link checker runs writes no report
