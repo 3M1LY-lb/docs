@@ -3,6 +3,14 @@ name: External links checker
 on:
   repository_dispatch:
   workflow_dispatch: # can also be triggered manually
+    inputs:
+      scope:
+        description: "nightly skips the release notes, full checks every page"
+        type: choice
+        options:
+          - nightly
+          - full
+        default: nightly
   schedule:
     - cron: "0 0 * * *" # every day at midnight UTC
 
@@ -45,6 +53,20 @@ jobs:
         env:
           PIP_CONSTRAINT: ${{ github.workspace }}/napari/resources/constraints/constraints_py3.12_docs.txt
 
+      - name: Choose the link check scope
+        id: scope
+        env:
+          SCOPE: ${{ inputs.scope }}
+        run: |
+          # a run without the scope input checks the release notes on Sundays only
+          if [ -z "$SCOPE" ]; then
+            if [ "$(date -u +%u)" = 7 ]; then SCOPE=full; else SCOPE=nightly; fi
+          fi
+          echo "Link check scope: ${SCOPE}"
+          if [ "$SCOPE" = nightly ]; then
+            echo "sphinxopts=-D linkcheck_exclude_documents='release/.*'" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run link checker
         uses: aganders3/headless-gui@f85dd6316993505dfc5f21839d520ae440c84816 # v2.2
         # a step timeout fails the step, so the issue step still runs
@@ -58,7 +80,7 @@ jobs:
           # Mermaid click targets, which the link checker does not read
           run:  |
             make -C docs prep-stubs
-            make -C docs -o prep-docs linkcheck-files
+            make -C docs -o prep-docs linkcheck-files SPHINXOPTS="${{ steps.scope.outputs.sphinxopts }}"
           # skipping setup stops the action from running the default (tiling) window manager
           # the window manager is not necessary for docs builds at this time and it was causing
           # problems with screenshots (https://github.com/napari/docs/issues/285)
