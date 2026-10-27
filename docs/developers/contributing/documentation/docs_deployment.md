@@ -61,12 +61,16 @@ and website through several CI workflows detailed below.
      `gh-pages` branch. Auto-deploys to `gh-pages` on every commit (which in
      turn happens on every commit to the `main` branches of either
      `napari/napari` or `napari/docs`).
-   - For every commit to the `gh-pages` branch of this repo, the
-     [`unversioned_pages.yml` action](https://github.com/napari/napari.github.io/blob/gh-pages/.github/workflows/unversioned_pages.yml)
-     is triggered and copies the latest contents of the index page and the dev
-     folder over the "stable" version of the documentation. This ensures that
-     both the landing page of the website and the developer documentation,
-     including the contributing guide, are always up to date.
+   - The `stable` folder in the `gh-pages` branch is a symlink to the folder of
+     the latest release. The root `index.html` redirects to `stable`. After
+     each release, the
+     [`symlink-stable.yml` workflow](https://github.com/napari/napari.github.io/blob/main/.github/workflows/symlink-stable.yml)
+     on the `main` branch of this repo points `stable` at the new version
+     folder. A maintainer starts this workflow by hand, as the
+     [release guide](napari-release-guide) describes. No workflow copies pages
+     from `dev` into `stable`. The developer documentation in `stable`,
+     including the contributing guide, matches the latest release. The "dev"
+     version of the website carries the newest developer documentation.
 
 ## Notes
 
