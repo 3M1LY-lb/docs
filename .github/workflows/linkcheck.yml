@@ -54,8 +54,11 @@ jobs:
         with:
           # Runs in '/home/runner/work/docs/docs/docs'
           # Built HTML pages in '/home/runner/work/docs/docs/docs/docs/_build/html'
+          # stubs stand in for the generated pages: their UI-section links are
+          # Mermaid click targets, which the link checker does not read
           run:  |
-            make -C docs linkcheck-files
+            make -C docs prep-stubs
+            make -C docs -o prep-docs linkcheck-files
           # skipping setup stops the action from running the default (tiling) window manager
           # the window manager is not necessary for docs builds at this time and it was causing
           # problems with screenshots (https://github.com/napari/docs/issues/285)
