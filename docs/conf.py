@@ -675,8 +675,8 @@ linkcheck_allowed_redirects = {
     r'https://youtu\.be/.*': r'https://www\.youtube\.com/.*',
     r'https://github\.com/napari/napari/releases/download/.*': r'https://objects\.githubusercontent\.com/.*',
 }
-# GitHub adds line, comment, readme, and issue anchors with JavaScript.
-# The fetched HTML does not contain them.
+# GitHub renders line, readme, and issue anchors in the browser, and loads
+# late comments on long threads on demand. The fetched HTML lacks those ids.
 linkcheck_anchors_ignore = [
     r'^!',
     r'L\d+',
